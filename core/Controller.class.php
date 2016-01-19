@@ -23,7 +23,6 @@ class Controller{
 
 	public function loadModel($model){
 		require ROOT . "models/" . $model . ".php";
-		return new $model();
 	}
 
 }

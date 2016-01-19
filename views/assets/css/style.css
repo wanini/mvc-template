@@ -1,0 +1,15 @@
+body, html{
+	font-family: 'Open Sans';
+}
+
+article{
+	background: rgb(240,240,240);
+	padding: 10px;
+	margin-top: 20px;
+	border-radius: 5px;
+}
+
+div.slider{
+	display: flex;
+	align-content: center;
+}

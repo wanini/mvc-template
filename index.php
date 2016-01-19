@@ -1,10 +1,11 @@
 <?php
 
 /**
- * Loading configuration
+ * Loading configuration & functions
  */
 
 require "core/config.php";
+require "core/functions.php";
 
 /**
  * Loading Controller and Model classes
@@ -17,7 +18,7 @@ require "core/Model.class.php";
  * Parsing url to get controller/action
  */
 
-$url = $_GET["url"];
+$url = (isset($_GET["url"])) ? $_GET['url'] : '';
 
 $controller = "Index";
 $action = "index";

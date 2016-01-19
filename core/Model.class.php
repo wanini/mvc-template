@@ -2,12 +2,16 @@
 
 class Model{
 
-	protected $pdo;
-	public $table;
+	protected static $pdo;
+	protected static $table;
 
 	public function __construct(){
+		$this->initDb();
+	}
+
+	public function initDb(){
 		global $CONFIG;
-		$this->pdo = new PDO(
+		self::$pdo = new PDO(
 			'mysql:host='.$CONFIG["database"]["host"].';dbname='.$CONFIG["database"]["dbname"],
 			$CONFIG["database"]["user"],
 			$CONFIG["database"]["pass"],
@@ -15,13 +19,14 @@ class Model{
 		);
 	}
 
-	public function find($condition = null){
+	public static function find($condition = null){
+		self::initDb();
 		if(!empty($condition)){
-			$stmt = "SELECT * FROM " . $this->table . " WHERE " . $condition;
+			$stmt = "SELECT * FROM " . static::$table . " WHERE " . $condition;
 		}else{
-			$stmt = "SELECT * FROM " . $this->table;
+			$stmt = "SELECT * FROM " . static::$table;
 		}
-		$request = $this->pdo->query($stmt);
+		$request = self::$pdo->query($stmt);
 		return $request->fetchAll();
 	}
 
@@ -35,46 +40,45 @@ class Model{
 			$vars[":".$key] = $value;
 			unset($vars[$key]);
 		}
-		$request = $this->pdo->prepare("INSERT INTO ANIMES VALUES (:ID, :title, :rate, :tags, :description)");
+		$request = self::$pdo->prepare('INSERT INTO ' . static::$table . ' VALUES (' . implode(',', array_keys($vars)) . ')');
 		try{
 			$ret = $request->execute($vars);
 		}catch(PDOException $e){
 			$ret = $e->getMessage();
 		}
-		return $ret;
+		if($ret) return self::$pdo->lastInsertId();
+		else return false;
 	}
 
-	public function update($ID){
-		if(isset($ID)){
+	public function update($id){
+		if(isset($id)){
 			$keys = array_keys(get_class_vars(__CLASS__));
 			$vars = get_object_vars($this);
+			$stmt = '';
 			foreach ($keys as $key) {
 				unset($vars[$key]);
 			}
 			foreach ($vars as $key => $value) {
-				if($vars[$key] != NULL){
-					$stmt = $key . "='" . $value . "'";
+				if($key != 'id' && $value != ''){
+					$stmt .= $key . "='" . addslashes($value) . "',";
 				}
 			}
-			$request = $this->pdo->prepare("UPDATE ANIMES SET " . $stmt . " WHERE ID = " . $ID);
+			$stmt = substr($stmt, 0, -1);
+			$request = self::$pdo->prepare("UPDATE ".static::$table." SET " . $stmt . " WHERE id = " . $id);
 			try{
 				$ret = $request->execute($vars);
 			}catch(PDOException $e){
 				$ret = $e->getMessage();
 			}
-		}else{ $ret = "ID missing"; }
+		}else{ $ret = "The id is missing"; }
 		return $ret;
 	}
 
-	public function delete($ID){
-		if(isset($ID)){
-			$request = $this->pdo->prepare("DELETE FROM ANIMES WHERE ID = " . $ID);
-			try{
-				$ret = $request->execute($vars);
-			}catch(PDOException $e){
-				$ret = $e->getMessage();
-			}
-		}else{ $ret = "ID missing"; }
+	public static function delete($id){
+		self::initDb();
+		if(isset($id)){
+			$ret = self::$pdo->exec('DELETE FROM '.static::$table.' WHERE id = '.$id);
+		}else{ $ret = "The id is missing"; }
 		return $ret;
 	}
 	
