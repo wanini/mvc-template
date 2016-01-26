@@ -1,5 +1,4 @@
 #PHP MVC Template
-#Version 1.0
 
 This is a little MVC template.
 Basic but usable for learning MVC design pattern or little websites.
